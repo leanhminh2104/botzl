@@ -1,0 +1,63 @@
+import time
+import random
+import requests
+from zlapi.models import Message, ThreadType
+from datetime import datetime, timedelta
+import pytz
+
+time_messages = {
+    "06:00": "Chào Buổi Sáng ! - Bắt Đầu Một Ngày Mới Tràn Đầy Năng Lượng Nào !",
+    "08:00": "Chúc Bạn Một Buổi Sáng An Lành !",
+    "10:00": "Làm Việc Và Học Tập Mệt Mỏi - Đừng Quên Nghỉ Ngơi Nhé !",
+    "11:30": "Nghỉ Ngơi Sau Một Buổi Sáng Căng Thẳng Nào",
+    "14:30": "Tới Giờ Làm Việc Tiếp Roi Nè - Chiều Vui Vẻ Nhe !",
+    "17:00": "Kết Thúc Một Ngày Làm Việc Và Học Tập - Bạn Thấy Thế Nào ?",
+    "20:00": "Thư Giãn Sau Ngày Dài Mệt Mỏi Đi Nào !",
+    "21:00": "Sắp Tới Giờ Ngủ Rồi Nè Hãy Chuẩn Bị Sạc Điện Thoại Nhé !",
+    "23:00": "Tới Giờ Ngủ Rồi Chúc Bạn Ngủ Ngon Nhé !",
+    "00:00": "Chưa Ngủ A ? Cất Điện Thoại Đi Ngủ Thôi Nào^^"
+}
+
+vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
+def start_auto(client):
+    try:
+        listvd = "https://raw.githubusercontent.com/nguyenductai206/list/refs/heads/main/listvideo.json"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+        }
+        response = requests.get(listvd, headers=headers)
+        response.raise_for_status()
+        urls = response.json()
+        video_url = random.choice(urls)
+        thumbnail_url = "https://files.catbox.moe/3vy7ga.jpg"
+        duration = '20'
+    except Exception as e:
+        print(f"Error fetching video list: {e}")
+        return
+
+    all_group = client.fetchAllGroups()
+    allowed_thread_ids = [gid for gid in all_group.gridVerMap.keys() if gid != '9034032228046851908']
+
+    last_sent_time = None
+
+    while True:
+        now = datetime.now(vn_tz)
+        current_time_str = now.strftime("%H:%M")
+        
+        if current_time_str in time_messages and (last_sent_time is None or now - last_sent_time >= timedelta(minutes=1)):
+            message = time_messages[current_time_str]
+            for thread_id in allowed_thread_ids:
+                gui = Message(text=f"[ Cá Tool Yeu Tmii - {current_time_str} ]\n> Outo Send V3: {message}")
+                try:
+                    client.sendMessage(
+                        message=gui,
+                        thread_id=thread_id,
+                        thread_type=ThreadType.GROUP,
+                    )
+                    time.sleep(0.5)
+                except Exception as e:
+                    print(f"Error sending message to {thread_id}: {e}")
+            last_sent_time = now
+        
+        time.sleep(30)
