@@ -90,6 +90,7 @@ def start_auto(client):
             )
 
             if not ds:
+                print("⚠️ Không có giao dịch đến.")
                 time.sleep(60)
                 continue
 
@@ -131,7 +132,7 @@ def start_auto(client):
                                 width=500,
                                 height=500,
                                 message=Message(text=msg.strip()),
-                                ttl=600000
+                                ttl=6000000
                             )
                             print("✅ Đã gửi ảnh QR.")
                         else:
@@ -140,7 +141,7 @@ def start_auto(client):
                                 Message(text=msg.strip()),
                                 thread_id=group_id,
                                 thread_type=ThreadType.GROUP,
-                                ttl=6000
+                               ttl=6000000
                             )
                             print("✅ Đã gửi tin nhắn.")
                         time.sleep(1)
@@ -149,7 +150,6 @@ def start_auto(client):
 
                 save_last_time(current_ts)
                 last_ts = current_ts
-            
         except requests.exceptions.RequestException as e:
             print(f"❌ Lỗi kết nối API: {e}")
         except Exception as e:
